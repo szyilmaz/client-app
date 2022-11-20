@@ -23,8 +23,7 @@ function App() {
 
   const handleUpdate = (id, name) => {
     console.log(id);
-    let myName = document.getElementById('name');
-    (myName as HTMLInputElement).value = name; 
+    setName(name);
 
     setId(id);
     setIsim(name);
@@ -68,11 +67,15 @@ function App() {
       const response = await axios.get('http://localhost:5286/api/Artists');
       setArtists(response.data);
     }
-    let myName = document.getElementById('name');
-    (myName as HTMLInputElement).value = ''; 
+    setName('')
     setId(0);
     setIsim('');
   };
+
+  const setName =(name) => {
+    let myName = document.getElementById('name');
+    (myName as HTMLInputElement).value = name; 
+  }
 
   return (
     <>
