@@ -33,7 +33,6 @@ function App() {
     setPopupYeniKayit({ showYeniKayit: true, kayitId : idd});
     setId(idd);
     setIsim(name);
-    //setName(name);
   };
 
   const handleSubmitCancel = () => {
