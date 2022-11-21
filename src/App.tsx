@@ -1,15 +1,21 @@
 import './App.css';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import {Modal, Button} from 'react-bootstrap';
 
 function App() {
 
+  const link = 'http://localhost:5286/api/Artists';
   const [artists, setArtists] = useState([]);
-  const [isim, setIsim] = useState('');
   const [id, setId] = useState(0);
+  const [isim, setIsim] = useState("");
+  const [popup, setPopup] = useState({ show: false, _id: 0 });
+  const [popupYeniKayit, setPopupYeniKayit] = useState({ showYeniKayit: false, kayitId: 0});
 
   const fetchData = async () => {
-    const response = await axios.get('http://localhost:5286/api/Artists');
+    const response = await axios.get(link);
     setArtists(response.data);
   }
 
@@ -21,76 +27,90 @@ function App() {
     setIsim(e.target.value);
   };
 
-  const handleUpdate = (id, name) => {
-    console.log(id);
-    setName(name);
-
-    setId(id);
+  const handleYeniKayit = (idd, name) => {
+    console.log(idd, name);
+    setPopupYeniKayit({ showYeniKayit: true, kayitId : idd});
+    setId(idd);
     setIsim(name);
+    //setName(name);
   };
 
-  const handleRemove = async (id) => {
-    await axios
-      .delete('http://localhost:5286/api/Artists/' + id)
-      .then((res) => {
-        let artistsRemaining = artists.filter((item) => item.id !== id);
-        setArtists(artistsRemaining);
-      })
-      .catch((err) => {
-        console.log(err.message);
-      });
-  }
+  const handleSubmitCancel = () => {
+    setPopupYeniKayit({ showYeniKayit: false, kayitId : 0});
+    setIsim('');
+  };
 
-  const handleSubmit = async (e) => {
+  const handleDelete = (idd) => {
+    console.log(idd);
+     setPopup({ show: true, _id : idd});
+     console.log(popup);
+  };
+
+const handleDeleteTrue = async () => {
+  if (popup.show && popup._id) {
+  await axios
+    .delete(link+ '/' + popup._id)
+    .then((res) => {
+      let artistsRemaining = artists.filter((item) => item.id !== popup._id);
+      setArtists(artistsRemaining);
+      toast.success('Kayıt Silindi')
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+    setPopup({
+      show: false,
+      _id: 0,
+    });
+  }
+}
+
+const handleDeleteFalse = () => {
+   setPopup({
+     show: false,
+     _id: 0,
+   });
+ };
+
+const handleSubmit = async (e) => {
     e.preventDefault();
-    if(id === 0) {
-      await axios.post('http://localhost:5286/api/Artists', {
+    if(popupYeniKayit.kayitId === 0) {
+      await axios.post(link, {
         name: isim
       })
       .then((res) => {
         const newArtists = artists.concat(res.data);
         setArtists(newArtists);
+        toast.success("Yeni kayıt eklendi!");
       })
       .catch((err) => {
         console.log(err.message);
       });
     } else {
-      await axios.put('http://localhost:5286/api/Artists/' + id, {
+      await axios.put(link+ '/' + id, {
         name: isim
       })
       .then((res) => {
-        
+        toast.success("Varolan kayıt düzenlendi!");
       })
       .catch((err) => {
         console.log(err.message);
       });
-      const response = await axios.get('http://localhost:5286/api/Artists');
+      const response = await axios.get(link);
       setArtists(response.data);
     }
-    setName('')
     setId(0);
     setIsim('');
-  };
+    setPopupYeniKayit({ showYeniKayit: false, kayitId : 0});
+};
 
-  const setName =(name) => {
-    let myName = document.getElementById('name');
-    (myName as HTMLInputElement).value = name; 
-  }
-
-  return (
+return (
     <>
       <div className='container'>
-        <form action='POST'>
-          <table className='table table-bordered table-condesed'>
-          <tbody>
-            <tr>
-              <td><input type="text" className="form-control" id="name" name="name" onChange={handleNameChange} style={{ width: "300px" }} /></td>
-              <td><button type="submit" className='btn btn-primary' onClick={handleSubmit}>Ekle</button></td>
-            </tr>
-          </tbody>
-          </table>
-        </form>
+      <br />
+      <button className='btn btn-primary' onClick={() => handleYeniKayit(0,"")}>Yeni Kayıt</button>
       </div>
+      <br />
       <div className='container'>
         <table className='table table-bordered table-condensed'>
           <thead>
@@ -104,17 +124,56 @@ function App() {
               <tr key={artist.id}>
                 <td>{artist.name}</td>
                 <td>
-                  <button className='btn btn-info' onClick={() => handleUpdate(artist.id, artist.name)}>Update</button>
+                  <button className='btn btn-info' onClick={() => handleYeniKayit(artist.id, artist.name)}>Update</button>
                   &nbsp;
-                  <button className='btn btn-danger' onClick={() => handleRemove(artist.id)}>Remove</button>
+                  <button className='btn btn-danger' onClick={() => handleDelete(artist.id)}>Remove</button>
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+        <ToastContainer />
+        {popup.show && ( <Popup show={popup.show} handleDeleteTrue={handleDeleteTrue} handleDeleteFalse={handleDeleteFalse} /> )}
+        {popupYeniKayit.showYeniKayit && ( <YeniKayitPopup name={isim} showYeniKayit={popupYeniKayit.showYeniKayit} handleNameChange={handleNameChange} handleSubmit={handleSubmit} handleSubmitCancel={handleSubmitCancel}/> )}
+       
       </div>
     </>
   );
 }
 
 export default App;
+
+const Popup =({ show, handleDeleteTrue, handleDeleteFalse }) => {
+  return (
+       <Modal show={show} onHide={handleDeleteFalse} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Uyarı</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Seçmiş olduğunuz kayıt silinecektir, Devam etmek istiyor musunuz?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleDeleteFalse}>Kapat</Button>
+          <Button type='submit' variant="danger" onClick={handleDeleteTrue}>Onayla</Button>
+        </Modal.Footer>
+      </Modal>
+  );
+}
+
+//TODO
+const YeniKayitPopup =({ showYeniKayit, handleSubmit, handleSubmitCancel, handleNameChange, name }) => {
+  return (
+      <Modal show={showYeniKayit} onHide={handleSubmitCancel} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Kayıt Ekle/Düzenle</Modal.Title>
+        </Modal.Header>
+        <form method='POST'>
+        <Modal.Body>
+            <input type ='text' id="xxx" className="form-control" onChange={handleNameChange} value={name} />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleSubmitCancel}>Kapat</Button>
+          <Button type='submit' variant="primary" onClick={handleSubmit}>Kaydet</Button>
+        </Modal.Footer>
+        </form>
+      </Modal>
+  );
+}
