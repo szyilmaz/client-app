@@ -3,7 +3,8 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import {Modal, Button} from 'react-bootstrap';
+import DeletePopup from './modals/DeletePopup';
+import AddUpdatePopup from './modals/AddUpdatePopup';
 
 function App() {
 
@@ -133,47 +134,15 @@ return (
           </tbody>
         </table>
         <ToastContainer />
-        {popup.show && ( <Popup show={popup.show} handleDeleteTrue={handleDeleteTrue} handleDeleteFalse={handleDeleteFalse} /> )}
-        {popupYeniKayit.showYeniKayit && ( <YeniKayitPopup name={isim} showYeniKayit={popupYeniKayit.showYeniKayit} handleNameChange={handleNameChange} handleSubmit={handleSubmit} handleSubmitCancel={handleSubmitCancel}/> )}
-       
+        { popup.show && 
+          (<DeletePopup show={popup.show} handleDeleteTrue={handleDeleteTrue} handleDeleteFalse={handleDeleteFalse} /> )
+        }
+        { popupYeniKayit.showYeniKayit && 
+          (<AddUpdatePopup name={isim} showYeniKayit={popupYeniKayit.showYeniKayit} handleNameChange={handleNameChange} handleSubmit={handleSubmit} handleSubmitCancel={handleSubmitCancel}/> )
+        }
       </div>
     </>
   );
 }
 
 export default App;
-
-const Popup =({ show, handleDeleteTrue, handleDeleteFalse }) => {
-  return (
-       <Modal show={show} onHide={handleDeleteFalse} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Uyarı</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Seçmiş olduğunuz kayıt silinecektir, Devam etmek istiyor musunuz?</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleDeleteFalse}>Kapat</Button>
-          <Button type='submit' variant="danger" onClick={handleDeleteTrue}>Onayla</Button>
-        </Modal.Footer>
-      </Modal>
-  );
-}
-
-//TODO
-const YeniKayitPopup =({ showYeniKayit, handleSubmit, handleSubmitCancel, handleNameChange, name }) => {
-  return (
-      <Modal show={showYeniKayit} onHide={handleSubmitCancel} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Kayıt Ekle/Düzenle</Modal.Title>
-        </Modal.Header>
-        <form method='POST'>
-        <Modal.Body>
-            <input type ='text' id="xxx" className="form-control" onChange={handleNameChange} value={name} />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleSubmitCancel}>Kapat</Button>
-          <Button type='submit' variant="primary" onClick={handleSubmit}>Kaydet</Button>
-        </Modal.Footer>
-        </form>
-      </Modal>
-  );
-}
