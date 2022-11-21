@@ -84,7 +84,7 @@ function App() {
           <table className='table table-bordered table-condesed'>
           <tbody>
             <tr>
-              <td> <input type="text" className="form-control" id="name" name="name" onChange={handleNameChange} style={{ width: "300px" }} /></td>
+              <td><input type="text" className="form-control" id="name" name="name" onChange={handleNameChange} style={{ width: "300px" }} /></td>
               <td><button type="submit" className='btn btn-primary' onClick={handleSubmit}>Ekle</button></td>
             </tr>
           </tbody>
@@ -103,7 +103,11 @@ function App() {
             {artists.map(artist =>
               <tr key={artist.id}>
                 <td>{artist.name}</td>
-                <td><button className='btn btn-info' onClick={() => handleUpdate(artist.id, artist.name)}>Update</button>&nbsp;<button className='btn btn-danger' onClick={() => handleRemove(artist.id)}>Remove</button></td>
+                <td>
+                  <button className='btn btn-info' onClick={() => handleUpdate(artist.id, artist.name)}>Update</button>
+                  &nbsp;
+                  <button className='btn btn-danger' onClick={() => handleRemove(artist.id)}>Remove</button>
+                </td>
               </tr>
             )}
           </tbody>
