@@ -5,6 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import DeletePopup from './modals/DeletePopup';
 import AddUpdatePopup from './modals/AddUpdatePopup';
+import LoginPopup from './modals/LoginPopup';
 
 function App() {
 
@@ -14,10 +15,29 @@ function App() {
   const [isim, setIsim] = useState("");
   const [popup, setPopup] = useState({ show: false, _id: 0 });
   const [popupYeniKayit, setPopupYeniKayit] = useState({ showYeniKayit: false, kayitId: 0});
+  const [popupLogin, setPopupLogin] = useState({ showLogin: false });
 
   const fetchData = async () => {
-    const response = await axios.get(link);
-    setArtists(response.data);
+  const token = JSON.parse(localStorage.getItem('user'))?.token;
+  
+   if(token !== undefined) {
+    axios.interceptors.request.use((config: any) => {
+      if (token)
+        config.headers.Authorization = `Bearer ${token}`;
+         return config;
+    });
+    await axios
+            .get(link)
+            .then((res) => {
+              setArtists(res.data);
+            })
+            .catch((error) =>{
+              toast.error(error);
+            });
+   }
+   else {
+    setArtists([]);
+   }
   }
 
   useEffect(() => {
@@ -33,6 +53,41 @@ function App() {
     setPopupYeniKayit({ showYeniKayit: true, kayitId : idd});
     setId(idd);
     setIsim(name);
+  };
+
+  const handleLogin = () => {
+    console.log("ALOOOOO");
+    setPopupLogin({ showLogin: true });
+  };
+
+  //handleLoginSubmit
+  const handleLoginSubmit = async () => {
+    console.log("ORDAMISIN");
+
+    await axios.post('http://localhost:5286/api/account/login', {
+      username: "bob",
+      password: "1234Aa.."
+    })
+    .then((res) => {
+      console.log(res.data);
+      localStorage.setItem('user', JSON.stringify(res.data));
+      fetchData();
+      toast.success("Giriş başarılı");
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+
+    setPopupLogin({ showLogin : false});
+  };
+
+  const handleLogout = () => {
+    setArtists([]);
+    localStorage.removeItem('user');
+  };
+
+  const handleLoginCancel = () => {
+    setPopupLogin({ showLogin : false});
   };
 
   const handleSubmitCancel = () => {
@@ -108,7 +163,7 @@ return (
     <>
       <div className='container'>
       <br />
-      <button className='btn btn-primary' onClick={() => handleYeniKayit(0,"")}>Yeni Kayıt</button>
+      <button className='btn btn-primary' onClick={() => handleYeniKayit(0,"")}>Yeni Kayıt</button> &nbsp; <button className='btn btn-primary' onClick={() => handleLogin()}>Login</button>&nbsp; <button className='btn btn-primary' onClick={() => handleLogout()}>Logout</button>
       </div>
       <br />
       <div className='container'>
@@ -138,6 +193,9 @@ return (
         }
         { popupYeniKayit.showYeniKayit && 
           (<AddUpdatePopup name={isim} showYeniKayit={popupYeniKayit.showYeniKayit} handleNameChange={handleNameChange} handleSubmit={handleSubmit} handleSubmitCancel={handleSubmitCancel}/> )
+        }
+        { popupLogin.showLogin && 
+          (<LoginPopup showLogin={popupLogin.showLogin} handleLoginSubmit={handleLoginSubmit} handleLoginCancel={handleLoginCancel}/> )
         }
       </div>
     </>
