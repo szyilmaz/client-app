@@ -2,7 +2,7 @@ import { Modal, Button } from 'react-bootstrap'
 
 const LoginPopup = ({ showLogin, handleLoginSubmit, handleLoginCancel }) => {
   return (
-    <Modal show={showLogin} centered>
+    <Modal show={showLogin} onHide={handleLoginCancel} centered>
         <Modal.Header closeButton>
           <Modal.Title>Login</Modal.Title>
         </Modal.Header>
